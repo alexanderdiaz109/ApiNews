@@ -1,0 +1,564 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Noticias (ApiNews)",
+    "version": "1.0.0",
+    "description": "Documentación de la API desarrollada con Express y Sequelize para un sistema de noticias.",
+    "contact": {
+      "name": "Tu Nombre/Equipo",
+      "email": "contacto@ejemplo.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/v1",
+      "description": "Servidor de desarrollo local (v1)"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Profile": {
+        "type": "object",
+        "required": [
+          "nombre"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "El ID autogenerado."
+          },
+          "nombre": {
+            "type": "string",
+            "description": "Nombre del perfil.",
+            "example": "Editor Senior"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "required": [
+          "nombre",
+          "descripcion"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 3
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Tecnología"
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Noticias sobre gadgets y ciencia."
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "perfil_id",
+          "nombre",
+          "correo",
+          "contraseña"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "perfil_id": {
+            "type": "integer",
+            "description": "ID del perfil de usuario (FK).",
+            "example": 2
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Juan"
+          },
+          "apellidos": {
+            "type": "string",
+            "example": "Pérez Gómez"
+          },
+          "correo": {
+            "type": "string",
+            "format": "email",
+            "example": "juan@news.com"
+          },
+          "contraseña": {
+            "type": "string",
+            "description": "Campo solo para POST/PUT.",
+            "example": "123456"
+          }
+        }
+      },
+      "New": {
+        "type": "object",
+        "required": [
+          "categoria_id",
+          "estado_id",
+          "usuario_id",
+          "titulo",
+          "fecha_publicacion",
+          "descripcion",
+          "imagen"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "categoria_id": {
+            "type": "integer",
+            "description": "Clave foránea de la categoría."
+          },
+          "estado_id": {
+            "type": "integer",
+            "description": "Clave foránea del estado."
+          },
+          "usuario_id": {
+            "type": "integer",
+            "description": "Clave foránea del usuario."
+          },
+          "titulo": {
+            "type": "string",
+            "example": "Descubren nueva especie"
+          },
+          "fecha_publicacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "descripcion": {
+            "type": "string",
+            "example": "Contenido de la noticia."
+          },
+          "imagen": {
+            "type": "string",
+            "description": "Contenido de la imagen (Base64 o URL)."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/profiles": {
+      "get": {
+        "summary": "Obtiene la lista de todos los perfiles.",
+        "tags": [
+          "Profiles"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de perfiles obtenida con éxito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Profile"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo perfil.",
+        "tags": [
+          "Profiles"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Perfil creado con éxito."
+          }
+        }
+      }
+    },
+    "/profiles/{id}": {
+      "put": {
+        "summary": "Actualiza un perfil por su ID.",
+        "tags": [
+          "Profiles"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil actualizado con éxito."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un perfil por su ID.",
+        "tags": [
+          "Profiles"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Perfil eliminado con éxito."
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "summary": "Obtiene la lista de todas las categorías.",
+        "tags": [
+          "Categories"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de categorías obtenida con éxito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea una nueva categoría.",
+        "tags": [
+          "Categories"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": {
+                    "type": "string"
+                  },
+                  "descripcion": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Categoría creada con éxito."
+          }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "put": {
+        "summary": "Actualiza una categoría por su ID.",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": {
+                    "type": "string"
+                  },
+                  "descripcion": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Categoría actualizada con éxito."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina una categoría por su ID.",
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Categoría eliminada con éxito."
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Obtiene la lista de todos los usuarios.",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios obtenida con éxito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo usuario.",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario creado con éxito."
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "put": {
+        "summary": "Actualiza campos de un usuario por su ID.",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuario actualizado con éxito."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un usuario por su ID.",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Usuario eliminado con éxito."
+          }
+        }
+      }
+    },
+    "/news": {
+      "get": {
+        "summary": "Obtiene todas las noticias.",
+        "tags": [
+          "News"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de noticias obtenida con éxito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/New"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea una nueva noticia.",
+        "tags": [
+          "News"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/New"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Noticia creada con éxito."
+          }
+        }
+      }
+    },
+    "/news/{id}": {
+      "put": {
+        "summary": "Actualiza campos de una noticia por su ID.",
+        "tags": [
+          "News"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/New"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Noticia actualizada con éxito."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina una noticia por su ID.",
+        "tags": [
+          "News"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Noticia eliminada con éxito."
+          }
+        }
+      }
+    }
+  }
+}
